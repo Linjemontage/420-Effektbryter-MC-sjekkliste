@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="Sjekkliste">
+<meta name="theme-color" content="#1a2744">
+<title>NKF-1005 Sjekkliste</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f5;color:#222}
+.hdr{background:#1a2744;color:#fff;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:99}
+.hdr h1{font-size:15px;font-weight:600}
+.hdr p{font-size:11px;opacity:.6}
+.hdr-r{display:flex;gap:8px;align-items:center}
+.dot{width:8px;height:8px;border-radius:50%;background:#4ade80}
+.dot.err{background:#f87171}
+.btn{padding:6px 12px;border:1px solid rgba(255,255,255,.3);border-radius:6px;background:rgba(255,255,255,.1);color:#fff;font-size:12px;cursor:pointer}
+.btn:hover{background:rgba(255,255,255,.2)}
+.layout{display:flex;height:calc(100vh - 48px)}
+.sidebar{width:240px;background:#fff;border-right:1px solid #e0e0e0;overflow-y:auto;flex-shrink:0}
+.main{flex:1;overflow-y:auto;padding:16px}
+.s-search{padding:8px;border-bottom:1px solid #eee}
+.s-search input{width:100%;padding:7px 10px;border:1px solid #ddd;border-radius:6px;font-size:13px}
+.s-item{padding:9px 12px;cursor:pointer;border-bottom:1px solid #f0f0f0;display:flex;justify-content:space-between;align-items:center}
+.s-item:hover{background:#f5f7ff}
+.s-item.active{background:#eff3ff;border-left:3px solid #2d5be3}
+.s-name{font-size:12px;font-weight:500;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.s-item.active .s-name{color:#2d5be3}
+.badge{font-size:10px;padding:2px 6px;border-radius:10px;font-weight:500}
+.bd{background:#dcfce7;color:#166534}
+.bp{background:#fef9c3;color:#854d0e}
+.bn{background:#f0f0f0;color:#888}
+/* Dashboard */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+.stat{background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:14px}
+.stat-l{font-size:10px;color:#888;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px}
+.stat-v{font-size:24px;font-weight:600;color:#1a2744}
+.stat-s{font-size:11px;color:#888;margin-top:2px}
+.prog-wrap{background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:14px;margin-bottom:16px}
+.prog-top{display:flex;justify-content:space-between;font-size:13px;font-weight:500;margin-bottom:8px}
+.track{height:10px;background:#f0f0f0;border-radius:5px;overflow:hidden}
+.fill{height:100%;background:#2d5be3;border-radius:5px;transition:width .3s}
+.tbl-wrap{background:#fff;border:1px solid #e0e0e0;border-radius:8px;overflow:hidden}
+.tbl-hdr{padding:12px 16px;font-weight:600;font-size:13px;border-bottom:1px solid #eee}
+table.dtbl{width:100%;border-collapse:collapse;font-size:12px}
+table.dtbl th{background:#f8f8f8;padding:8px 12px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:#666;border-bottom:1px solid #e0e0e0}
+table.dtbl td{padding:9px 12px;border-bottom:1px solid #f0f0f0}
+table.dtbl tr{cursor:pointer}
+table.dtbl tr:hover td{background:#f5f7ff}
+.mini{display:flex;align-items:center;gap:6px}
+.mini-t{flex:1;height:5px;background:#f0f0f0;border-radius:3px;overflow:hidden;min-width:50px}
+.mini-f{height:100%;border-radius:3px;background:#2d5be3}
+.mini-f.done{background:#2d7a4f}
+.chip{display:inline-block;padding:2px 7px;border-radius:10px;font-size:10px;font-weight:500}
+.chip-done{background:#dcfce7;color:#166534}
+.chip-prog{background:#fef9c3;color:#854d0e}
+.chip-none{background:#f0f0f0;color:#888}
+/* Checklist */
+.cl-hdr{background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:14px;margin-bottom:12px}
+.cl-title{font-size:18px;font-weight:600;color:#1a2744;margin-bottom:10px}
+.meta-g{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.mf label{font-size:10px;font-weight:600;text-transform:uppercase;color:#888;display:block;margin-bottom:3px}
+.mf input{width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:6px;font-size:12px;background:#f8f8f8}
+.mf input:focus{outline:none;border-color:#2d5be3;background:#fff}
+.prog-row{display:flex;align-items:center;gap:10px}
+.prog-row .track{flex:1;height:7px}
+.pct-lbl{font-size:13px;font-weight:600;color:#2d5be3;min-width:36px}
+.cnt-lbl{font-size:11px;color:#888}
+.acts{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap}
+.act-btn{padding:6px 12px;border:1px solid #ddd;border-radius:6px;font-size:12px;cursor:pointer;background:#fff;color:#333}
+.act-btn:hover{background:#f5f5f5}
+.act-btn.primary{background:#2d5be3;color:#fff;border-color:#2d5be3}
+.ct-wrap{background:#fff;border:1px solid #e0e0e0;border-radius:8px;overflow:auto}
+table.ct{width:100%;border-collapse:collapse;font-size:12px}
+table.ct th{background:#1a2744;color:#fff;padding:9px 8px;text-align:left;font-weight:400;font-size:11px}
+table.ct td{padding:7px 8px;border-bottom:1px solid #f0f0f0;vertical-align:middle}
+table.ct tr.r-done td{background:#f0fdf4}
+table.ct tr.r-av td{background:#fff5f5}
+.rn{font-size:10px;color:#aaa;text-align:center;width:24px}
+.ti{width:100%;padding:4px 6px;border:1px solid #ddd;border-radius:4px;font-size:11px;background:transparent}
+.ti:focus{outline:none;border-color:#2d5be3}
+.av-btns{display:flex;gap:3px}
+.av{padding:4px 8px;border-radius:4px;border:1px solid #ddd;font-size:11px;cursor:pointer;background:#fff}
+.av.ja.on{background:#ffe0e0;border-color:#e74c3c;color:#c0392b;font-weight:600}
+.av.nei.on{background:#dcfce7;border-color:#2d7a4f;color:#166534;font-weight:600}
+.sign-w{display:flex;flex-direction:column;gap:2px}
+.dato{font-size:9px;color:#aaa}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1a2744;color:#fff;padding:10px 18px;border-radius:20px;font-size:13px;z-index:999;opacity:0;transition:opacity .25s;pointer-events:none}
+.toast.show{opacity:1}
+@media(max-width:640px){
+  .sidebar{display:none}
+  .stats{grid-template-columns:1fr 1fr}
+  .layout{height:calc(100vh - 48px)}
+}
+</style>
+</head>
+<body>
+<header class="hdr">
+  <div>
+    <h1>NKF-1005 Sjekkliste</h1>
+    <p>Effektbryter 420 kV · Skyberg</p>
+  </div>
+  <div class="hdr-r">
+    <div class="dot" id="dot" title="Synkstatus"></div>
+    <button class="btn" onclick="showDash()">Oversikt</button>
+  </div>
+</header>
+<div class="layout">
+  <nav class="sidebar">
+    <div class="s-search"><input type="text" placeholder="Søk ark..." oninput="filterSidebar(this.value)"></div>
+    <div id="sList"></div>
+  </nav>
+  <main class="main" id="main"></main>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const WORKER = 'https://sjekkliste-api.helge3h.workers.dev';
+const LS_KEY = 'nkf_v1';
+
+const SHEETS = ["300R1AE-L1","300R1AE-L2","300R1AE-L3","300R1BE-L1","300R1BE-L2","300R1BE-L3","300KB1AE-L1","300KB1AE-L2","300KB1AE-L3","300KB1BE-L1","300KB1BE-L2","300KB1BE-L3","300T1AE-L1","300T1AE-L2","300T1AE-L3","300T1BE-L1","300T1BE-L2","300T1BE-L3","300Rø1AE-L1","300Rø1AE-L2","300Rø1AE-L3","300Rø1BE-L1","300Rø1BE-L2","300Rø1BE-L3","300T2AE-L1","300T2AE-L2","300T2AE-L3","300T2BE-L1","300T2BE-L2","300T2BE-L3","300Få1AE-L1","300Få1AE-L2","300Få1AE-L3","300Få1BE-L1","300Få1BE-L2","300Få1BE-L3","300KB2AE-L1","300KB2AE-L2","300KB2AE-L3","300KB2BE-L1","300KB2BE-L2","300KB2BE-L3"];
+
+const ITEMS = [{"element":"Gassfylling","metode":"Varsel"},{"element":"Gassfylling","metode":"Blokkering"},{"element":"Gassfylling","metode":"Temp/trykk"},{"element":"Inn-lokalt","metode":"Funksjon"},{"element":"Inn-lokalt","metode":"Gass/Blokkering"},{"element":"Inn-lokalt","metode":"Finger print"},{"element":"Inn-lokalt","metode":"Fjæropptrekk"},{"element":"Inn-lokalt","metode":"Motorstrøm"},{"element":"Inn-lokalt","metode":"Innstilling motorvern"},{"element":"Inn-lokalt","metode":"Stillingsmelding"},{"element":"Inn.lokalt","metode":"Kontrollere-Antipumpe rele"},{"element":"Ut-lokalt spole 1","metode":"Utkobling/trip"},{"element":"Ut-lokalt spole 2","metode":"Trip"},{"element":"Ut-lokalt","metode":"Nødbetjening"},{"element":"Ut-lokalt","metode":"Stillingsmelding"},{"element":"Ut-lokalt","metode":"Følgestyring"},{"element":"Varme","metode":"Innstilt temp"},{"element":"Lys","metode":"Dørbryter"},{"element":"Mekanisk galv. Skader","metode":"Visuell kontroll"},{"element":"Isolator skader","metode":"Visuell kontroll for skader"},{"element":"Moment","metode":"Bolter merket for moment tiltrekking"},{"element":"Bolter","metode":"Sjekke at bolter ikke er kjørnet"},{"element":"Gass","metode":"Sjekke trykk og temp. etter betjening"},{"element":"Inn","metode":"Måling Bryterfeil signaler"},{"element":"Inn","metode":"Tidsetting Bryterfeil signaler"},{"element":"Merkeskilt","metode":"Kontroll innhold/festing"},{"element":"Driftsmerking","metode":"Kontroll innhold/festing"},{"element":"Jording","metode":"Konstruksjoner/koblings skap"},{"element":"Er bilder mottatt og lagret","metode":""}];
+
+let state = {};
+let current = null;
+let saveTimer = null;
+let user = localStorage.getItem('nkf_user') || 'Ukjent';
+
+function initState() {
+  SHEETS.forEach(s => {
+    if (!state[s]) state[s] = {
+      meta: {fabrikat:'Siemens 3AP2F1-2', driftsmerking:s, serie_nr:'', prosjekt:''},
+      rows: ITEMS.map(() => ({avvik:null, maal:'', beskr:'', sign:'', dato:'', signBy:''}))
+    };
+    while (state[s].rows.length < ITEMS.length)
+      state[s].rows.push({avvik:null, maal:'', beskr:'', sign:'', dato:'', signBy:''});
+  });
+}
+
+function getStats(n) {
+  const s = state[n];
+  const tot = ITEMS.length;
+  const av = s.rows.filter(r => r.avvik !== null).length;
+  const sg = s.rows.filter(r => r.sign && r.sign.trim()).length;
+  const done = av === tot && sg === tot;
+  return {tot, av, sg, done, pct: Math.round((sg/tot)*100)};
+}
+
+function getOverall() {
+  let done=0, sg=0, tot=0;
+  SHEETS.forEach(s => { const st=getStats(s); if(st.done)done++; sg+=st.sg; tot+=st.tot; });
+  return {done, sg, tot, pct:Math.round((done/SHEETS.length)*100), ark:SHEETS.length};
+}
+
+function buildSidebar(q) {
+  q = (q||'').toLowerCase();
+  document.getElementById('sList').innerHTML = SHEETS
+    .filter(n => n.toLowerCase().includes(q))
+    .map(n => {
+      const st = getStats(n);
+      const badge = st.done ? '<span class="badge bd">&#x2713;</span>' : st.pct > 0 ? '<span class="badge bp">'+st.pct+'%</span>' : '<span class="badge bn">&mdash;</span>';
+      const cls = current===n ? ' active' : '';
+      const idx = SHEETS.indexOf(n);
+      return '<div class="s-item'+cls+'" onclick="openSheet('+idx+')"><span class="s-name">'+n+'</span>'+badge+'</div>';
+    }).join('');
+}
+
+function filterSidebar(q) { buildSidebar(q); }
+
+function showDash() {
+  current = null;
+  buildSidebar();
+  const ov = getOverall();
+  const rows = SHEETS.map(n => {
+    const st = getStats(n);
+    const sn = (state[n].meta.serie_nr||'').trim();
+    const snH = sn ? `<span style="font-size:11px;color:#888">${sn.substring(0,20)}</span>` : `<span style="color:#e74c3c;font-size:11px;font-weight:500">Mangler</span>`;
+    const chip = st.done ? `<span class="chip chip-done">✓ Fullført</span>` : st.pct>0 ? `<span class="chip chip-prog">Påbegynt</span>` : `<span class="chip chip-none">—</span>`;
+    const fc = st.done ? ' done' : '';
+    const sidx = SHEETS.indexOf(n);
+      return `<tr onclick="openSheet(${sidx})">
+      <td style="font-weight:500">${n}</td>
+      <td>${snH}</td>
+      <td>${chip}</td>
+      <td><div class="mini"><div class="mini-t"><div class="mini-f${fc}" style="width:${st.pct}%"></div></div><span style="font-size:10px;color:#888;min-width:28px">${st.pct}%</span></div></td>
+      <td style="color:#888;font-size:11px">${st.sg}/${st.tot}</td>
+    </tr>`;
+  }).join('');
+
+  const d = new Date();
+  const ds = d.toLocaleDateString('no-NO')+' '+d.toLocaleTimeString('no-NO',{hour:'2-digit',minute:'2-digit'});
+
+  document.getElementById('main').innerHTML = `
+    <div class="stats">
+      <div class="stat"><div class="stat-l">Total fremgang</div><div class="stat-v">${ov.pct}%</div><div class="stat-s">${ov.done} av ${ov.ark} fullført</div></div>
+      <div class="stat"><div class="stat-l">Ark fullført</div><div class="stat-v">${ov.done}</div><div class="stat-s">av ${ov.ark}</div></div>
+      <div class="stat"><div class="stat-l">Signaturer</div><div class="stat-v">${ov.sg}</div><div class="stat-s">av ${ov.tot} rader</div></div>
+      <div class="stat"><div class="stat-l">Gjenstående</div><div class="stat-v">${ov.ark-ov.done}</div><div class="stat-s">ark</div></div>
+    </div>
+    <div class="prog-wrap">
+      <div class="prog-top"><span>Samlet fremgang</span><span style="color:#2d5be3">${ov.pct}%</span></div>
+      <div class="track"><div class="fill" style="width:${ov.pct}%"></div></div>
+    </div>
+    <div class="tbl-wrap">
+      <div class="tbl-hdr">Alle sjekklister · ${ds}</div>
+      <div style="overflow-x:auto">
+        <table class="dtbl"><thead><tr><th>Ark</th><th>Serie nr.</th><th>Status</th><th>Fremgang</th><th>Sign.</th></tr></thead>
+        <tbody>${rows}</tbody></table>
+      </div>
+    </div>`;
+}
+
+function openSheet(idx) { open_(SHEETS[idx]); }
+function open_(n) {
+  current = n;
+  buildSidebar();
+  renderSheet(n);
+  document.getElementById('main').scrollTop = 0;
+}
+
+function renderSheet(n) {
+  const sidx = SHEETS.indexOf(n);
+  const s = state[n];
+  const st = getStats(n);
+  const idx = SHEETS.indexOf(n);
+  const prev = idx>0 ? SHEETS[idx-1] : null;
+  const next = idx<SHEETS.length-1 ? SHEETS[idx+1] : null;
+
+  const rows = ITEMS.map((item,i) => {
+    const r = s.rows[i];
+    const done = r.avvik!==null && r.sign && r.sign.trim();
+    const isAv = r.avvik==='ja';
+    const rc = done ? ' r-done' : isAv ? ' r-av' : '';
+    const jaOn = r.avvik==='ja' ? ' on' : '';
+    const neiOn = r.avvik==='nei' ? ' on' : '';
+    const signInfo = r.dato ? `<div class="dato">${r.dato}${r.signBy?' · '+r.signBy:''}</div>` : '';
+    return `<tr class="${rc}">
+      <td class="rn">${i+1}</td>
+      <td style="min-width:100px;font-weight:500">${item.element}</td>
+      <td style="min-width:90px;color:#666;font-size:11px">${item.metode}</td>
+      <td style="min-width:80px"><input class="ti" type="text" placeholder="Resultat" value="${esc(r.maal)}" onchange="upd(${sidx},${i},'maal',this.value)"></td>
+      <td style="min-width:85px"><div class="av-btns">
+        <button class="av ja${jaOn}" onclick="tog(${sidx},${i},'ja')">Ja</button>
+        <button class="av nei${neiOn}" onclick="tog(${sidx},${i},'nei')">Nei</button>
+      </div></td>
+      <td style="min-width:100px"><input class="ti" type="text" placeholder="Beskrivelse" value="${esc(r.beskr)}" onchange="upd(${sidx},${i},'beskr',this.value)"></td>
+      <td style="min-width:90px"><div class="sign-w">
+        <input class="ti" type="text" placeholder="Signatur" value="${esc(r.sign)}" onchange="sign_(${sidx},${i},this.value)">
+        ${signInfo}
+      </div></td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('main').innerHTML = `
+    <div class="cl-hdr">
+      <div class="cl-title">${n}</div>
+      <div class="meta-g">
+        <div class="mf"><label>Fabrikat</label><input type="text" value="${esc(s.meta.fabrikat)}" onchange="updMeta(${sidx},'fabrikat',this.value)"></div>
+        <div class="mf"><label>Driftsmerking</label><input type="text" value="${esc(s.meta.driftsmerking)}" onchange="updMeta(${sidx},'driftsmerking',this.value)"></div>
+        <div class="mf"><label>Serie nr.</label><input type="text" value="${esc(s.meta.serie_nr)}" onchange="updMeta(${sidx},'serie_nr',this.value)"></div>
+        <div class="mf"><label>Prosjekt</label><input type="text" value="${esc(s.meta.prosjekt)}" onchange="updMeta(${sidx},'prosjekt',this.value)"></div>
+      </div>
+      <div class="prog-row">
+        <div class="track"><div class="fill" style="width:${st.pct}%"></div></div>
+        <span class="pct-lbl">${st.pct}%</span>
+        <span class="cnt-lbl">${st.sg}/${st.tot} signert</span>
+        ${st.done ? '<span class="chip chip-done" style="margin-left:4px">✓ Fullført</span>' : ''}
+      </div>
+    </div>
+    <div class="acts">
+      ${prev ? `<button class="act-btn" onclick="openSheet(${SHEETS.indexOf(prev)})">← ${prev}</button>` : ''}
+      <button class="act-btn" onclick="showDash()">Oversikt</button>
+      <button class="act-btn primary" onclick="window.print()">Eksporter PDF</button>
+      ${next ? `<button class="act-btn" onclick="openSheet(${SHEETS.indexOf(next)})">${next} →</button>` : ''}
+    </div>
+    <div class="ct-wrap">
+      <table class="ct">
+        <thead><tr><th>#</th><th>Element</th><th>Metode</th><th>Målt resultat</th><th>Avvik</th><th>Beskrivelse</th><th>Signatur</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
+}
+
+function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+
+function updMeta(idx,f,v){ state[SHEETS[idx]].meta[f]=v; save(); }
+function upd(idx,i,f,v){ state[SHEETS[idx]].rows[i][f]=v; save(); }
+function tog(idx,i,v){
+  const n=SHEETS[idx];
+  state[n].rows[i].avvik = state[n].rows[i].avvik===v ? null : v;
+  save(); renderSheet(n); buildSidebar();
+}
+function sign_(idx,i,v){ const n=SHEETS[idx];
+  state[n].rows[i].sign=v;
+  if(v.trim()){
+    state[n].rows[i].dato=new Date().toLocaleDateString('no-NO');
+    state[n].rows[i].signBy=user;
+  } else {
+    state[n].rows[i].dato='';
+    state[n].rows[i].signBy='';
+  }
+  save(); renderSheet(n); buildSidebar();
+}
+
+function save(){
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(async () => {
+    const json = JSON.stringify(state);
+    try { localStorage.setItem(LS_KEY, json); } catch(e){}
+    try {
+      const r = await fetch(WORKER, {method:'POST', headers:{'Content-Type':'application/json'}, body:json});
+      setDot(r.ok ? 'ok' : 'err');
+    } catch(e){ setDot('err'); }
+  }, 800);
+}
+
+function setDot(s){ document.getElementById('dot').className = 'dot'+(s==='err'?' err':''); }
+
+function toast(m){
+  const t=document.getElementById('toast');
+  t.textContent=m; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+// ── INIT — load local immediately, then sync cloud ──
+function start(){
+  try {
+    const local = localStorage.getItem(LS_KEY);
+    if(local) state = JSON.parse(local);
+  } catch(e){}
+  initState();
+  buildSidebar();
+  showDash();
+  // Sync cloud in background
+  fetch(WORKER, {method:'GET'})
+    .then(r => r.ok ? r.json() : null)
+    .then(data => {
+      if(data && Object.keys(data).length > 0){
+        state = data;
+        initState();
+        buildSidebar();
+        if(!current) showDash(); else renderSheet(current);
+        setDot('ok');
+        toast('Synkronisert fra sky');
+      } else { setDot('ok'); }
+    })
+    .catch(() => setDot('err'));
+}
+
+start();
+</script>
+</body>
+</html>
