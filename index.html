@@ -375,7 +375,7 @@ function exportPDF() {
     '.prog{display:flex;align-items:center;gap:8px;margin-bottom:8px}' +
     '.track{flex:1;height:7px;background:#eee;border-radius:4px;overflow:hidden}' +
     '.fill{height:100%;background:#2d5be3}' +
-    '@page{margin:1cm}@media print{button{display:none}}' +
+    '@page{margin:1cm}@media print{button{display:none}*{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;color-adjust:exact!important}}' +
     '</style></head><body>' +
     '<img src="data:image/png;base64,' + logoB64 + '" style="height:44px;margin-bottom:8px" alt="Linjemontage">' +
     '<h1>' + n + '</h1>' +
