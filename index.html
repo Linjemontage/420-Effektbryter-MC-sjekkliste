@@ -79,6 +79,9 @@ table.ct th{background:#1a2744;color:#fff;padding:9px 8px;text-align:left;font-w
 table.ct td{padding:7px 8px;border-bottom:1px solid #f0f0f0;vertical-align:middle}
 table.ct tr.r-done td{background:#f0fdf4}
 table.ct tr.r-av td{background:#fff5f5}
+table.ct tr.r-na td{background:#f5f5f5;color:#bbb}
+table.ct tr.r-na input:not([type=checkbox]),table.ct tr.r-na button{pointer-events:none;opacity:0.4}
+table.ct tr.r-na .av-btns{pointer-events:none;opacity:0.4}
 .rn{font-size:10px;color:#aaa;text-align:center;width:24px}
 .ti{width:100%;padding:4px 6px;border:1px solid #ddd;border-radius:4px;font-size:11px;background:transparent}
 .ti:focus{outline:none;border-color:#2d5be3}
@@ -243,7 +246,7 @@ function renderSheet(n) {
     const r = s.rows[i];
     const done = r.avvik!==null && r.sign && r.sign.trim();
     const isAv = r.avvik==='ja';
-    const rc = done ? ' r-done' : isAv ? ' r-av' : '';
+    const rc = r.na ? ' r-na' : done ? ' r-done' : isAv ? ' r-av' : '';
     const jaOn = r.avvik==='ja' ? ' on' : '';
     const neiOn = r.avvik==='nei' ? ' on' : '';
     const signInfo = r.dato ? `<div class="dato">${r.dato}${r.signBy?' · '+r.signBy:''}</div>` : '';
@@ -257,7 +260,7 @@ function renderSheet(n) {
         <div style="display:flex;align-items:center;gap:6px">
           <input class="ti" type="text" placeholder="Resultat" value="${esc(r.maal)}" ${maalDisabled} onchange="upd(${sidx},${i},'maal',this.value)" style="flex:1">
           <label style="display:flex;align-items:center;gap:3px;font-size:10px;color:#888;cursor:pointer;white-space:nowrap;padding:4px 6px;border:1px solid #ddd;border-radius:4px;background:${r.na?'#f0f0f0':'#fff'}">
-            <input type="checkbox" ${naChecked} onchange="togNA(${sidx},${i},this.checked)" style="width:13px;height:13px;cursor:pointer;margin:0">
+            <input type="checkbox" ${naChecked} onchange="togNA(${sidx},${i},this.checked)" style="width:13px;height:13px;cursor:pointer;margin:0;pointer-events:auto;opacity:1;position:relative;z-index:2">
             N/A
           </label>
         </div>
