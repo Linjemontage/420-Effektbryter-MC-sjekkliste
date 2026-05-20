@@ -1532,6 +1532,9 @@ function renderSheet(mcid,sheetName){
       <button class="img-upload-btn" onclick="triggerImageUpload('${mcid}','${sheetName.replace(/'/g,"\\'")}')">
         📎 Last opp bilde
       </button>
+      <button class="img-upload-btn" onclick="loadImages('${mcid}','${sheetName.replace(/'/g,"\\'")}',true)" style="background:#1a4a8a;margin-left:8px">
+        🔄 Vis bilder
+      </button>
       <input type="file" id="img-input-${mcid}-${sheetName.replace(/[^a-zA-Z0-9]/g,'-')}" accept="image/*" multiple style="display:none" onchange="uploadImages(this,'${mcid}','${sheetName.replace(/'/g,"\\'")}')">
     </div>
   </div>`;
@@ -1751,28 +1754,29 @@ function imgGridId(mcid, sn) {
   return 'img-grid-' + mcid + '-' + sn.replace(/[^a-zA-Z0-9]/g,'-');
 }
 
-async function loadImages(mcid, sn) {
+async function loadImages(mcid, sn, force=false) {
   const gridId = imgGridId(mcid, sn);
   const grid = document.getElementById(gridId);
   if (!grid) return;
-
+  if (force) grid.innerHTML = '<div style="color:#aaa;font-size:13px;grid-column:1/-1">Henter bilder...</div>';
   try {
-    const key = encodeURIComponent(mcid + '/' + sn);
     const res = await fetch(WORKER + '/imagelist/' + mcid + '/' + encodeURIComponent(sn));
+    if (!res.ok) throw new Error('HTTP ' + res.status);
     const images = await res.json();
-
     if (!Array.isArray(images) || images.length === 0) {
       grid.innerHTML = '<div style="color:#aaa;font-size:13px;grid-column:1/-1">Ingen bilder lastet opp</div>';
+      if (force) toast('Ingen bilder funnet');
       return;
     }
-
     grid.innerHTML = images.map(img => `
       <div class="img-thumb" onclick="openLightbox('${img.url}')">
         <img src="${img.url}" alt="bilde" loading="lazy">
         ${window.currentUser?.id === 'helge' ? `<button class="img-del" onclick="event.stopPropagation();deleteImage('${img.key}','${mcid}','${sn}')">✕</button>` : ''}
       </div>`).join('');
+    if (force) toast(images.length + ' bilde(r) hentet ✓');
   } catch(e) {
-    grid.innerHTML = '<div style="color:#c0392b;font-size:13px;grid-column:1/-1">Kunne ikke laste bilder</div>';
+    grid.innerHTML = '<div style="color:#c0392b;font-size:13px;grid-column:1/-1">Feil: ' + e.message + '</div>';
+    if (force) toast('Feil ved henting: ' + e.message);
   }
 }
 
