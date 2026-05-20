@@ -339,6 +339,7 @@ let state={};
 let currentMC=null;
 let currentSheet=null;
 let saveTimer=null;
+function isReadOnly(){ return window.currentUser?.readOnly === true; }
 let collapsedGroups=JSON.parse(localStorage.getItem('nkf_collapsed')||'{}');
 let user=localStorage.getItem('nkf_user')||'Ukjent';
 
@@ -1650,8 +1651,6 @@ function deleteChangelogEntry(mcid, sn, rowIdx, logIdx) {
   save();
   renderSheet(mcid, sn);
 }
-
-function isReadOnly(){ return window.currentUser?.readOnly === true; }
 
 function updRow(mcid,sn,i,f,v){if(isReadOnly()){toast('Kun lesetilgang');return;}if(state[mcid]?.sheets[sn])state[mcid].sheets[sn].rows[i][f]=v;save();}
 function autoResize(el){
