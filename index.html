@@ -1478,21 +1478,22 @@ function renderSheet(mcid,sheetName){
             </label>
           </div>` :
           `<div style="display:flex;align-items:center;gap:5px">
-            <input class="ti" type="text" placeholder="Resultat" value="${esc(r.maal||'')}" ${maalDis} onchange="updRow('${mcid}','${sheetName.replace(/'/g,"\\'")}',${i},'maal',this.value)" style="flex:1">
+            <input class="ti" type="text" placeholder="Resultat" value="${esc(r.maal||'')}" ${maalDis} ${isReadOnly()?'readonly style="flex:1;background:#f5f5f5;cursor:not-allowed"':'style="flex:1"'} onchange="updRow('${mcid}','${sheetName.replace(/'/g,"\\'")}',${i},'maal',this.value)">
             <label style="display:flex;align-items:center;gap:3px;font-size:10px;color:#888;cursor:pointer;white-space:nowrap;padding:3px 6px;border:1px solid #ddd;border-radius:4px;background:${r.na?'#f0f0f0':'#fff'}">
-              <input type="checkbox" ${naChk} onchange="togNA('${mcid}','${sheetName.replace(/'/g,"\\'")}',${i},this.checked)" style="width:12px;height:12px;cursor:pointer;margin:0;pointer-events:auto;opacity:1">N/A
+              <input type="checkbox" ${naChk} ${isReadOnly()?'disabled':'onchange="togNA(\''+mcid+'\',\''+sheetName.replace(/'/g,"\\'")+'\',' +i+',this.checked)"'} style="width:12px;height:12px;margin:0;opacity:1${isReadOnly()?';cursor:not-allowed':';cursor:pointer;pointer-events:auto'}">N/A
             </label>
           </div>`
         }
       </td>
       <td style="min-width:80px"><div class="av-btns">
-        <button class="av ja${jaOn}" onclick="togAvvik('${mcid}','${sheetName.replace(/'/g,"\\'")}',${i},'ja')">Ja</button>
-        <button class="av nei${neiOn}" onclick="togAvvik('${mcid}','${sheetName.replace(/'/g,"\\'")}',${i},'nei')">Nei</button>
+        <button class="av ja${jaOn}" onclick="togAvvik('${mcid}','${sheetName.replace(/'/g,"\\'")}',${i},'ja')" ${isReadOnly()?'disabled style="opacity:.5;cursor:not-allowed"':''}>Ja</button>
+        <button class="av nei${neiOn}" onclick="togAvvik('${mcid}','${sheetName.replace(/'/g,"\\'")}',${i},'nei')" ${isReadOnly()?'disabled style="opacity:.5;cursor:not-allowed"':''}>Nei</button>
       </div></td>
-      <td style="min-width:100px"><textarea class="ti" placeholder="Beskrivelse" data-mcid="${mcid}" data-sn="${sheetName}" data-idx="${i}" data-field="beskr" oninput="autoResize(this);handleTaChange(this)" style="resize:none;overflow:hidden;min-height:28px;line-height:1.4;padding:4px 6px;font-family:inherit">${esc(r.beskr||"")}</textarea></td>
+      <td style="min-width:100px"><textarea class="ti" placeholder="Beskrivelse" data-mcid="${mcid}" data-sn="${sheetName}" data-idx="${i}" data-field="beskr" ${isReadOnly()?'readonly style="resize:none;overflow:hidden;min-height:28px;line-height:1.4;padding:4px 6px;font-family:inherit;background:#f5f5f5;cursor:not-allowed"':'oninput="autoResize(this);handleTaChange(this)" style="resize:none;overflow:hidden;min-height:28px;line-height:1.4;padding:4px 6px;font-family:inherit"'}>${esc(r.beskr||"")}</textarea></td>
       <td style="min-width:90px"><div class="sign-w">
         ${r.sign
           ? `<div style="font-size:12px;font-weight:600;color:#2d7a4f;padding:4px 0">${esc(r.sign)}${window.currentUser?.id==='helge'?` <button onclick="removeSign('${mcid}','${sheetName.replace(/'/g,"\\'")}',${i})" title="Fjern signatur" style="background:none;border:none;color:#c0392b;cursor:pointer;font-size:13px;padding:0 2px;vertical-align:middle">✕</button>`:''}</div>${signInfo}`
+          : isReadOnly() ? '<span style="color:#aaa;font-size:11px">—</span>'
           : `<button onclick="signRow('${mcid}','${sheetName.replace(/'/g,"\\'")}',${i})" style="background:#1a2744;color:#fff;border:none;border-radius:6px;padding:5px 10px;font-size:12px;font-weight:600;cursor:pointer">Signer</button>`
         }
       </div></td>
@@ -1889,6 +1890,9 @@ const USERS = [
   { id:'henning',  name:'Henning Lykke',         initials:'HL' },
   { id:'test',     name:'Test',                  initials:'T'  },
   { id:'statnett', name:'Statnett',              initials:'SN', readOnly:true },
+  { id:'alexander',name:'Alexander Nani',        initials:'AN' },
+  { id:'hugo',     name:'Hugo Cardoso',          initials:'HC' },
+  { id:'jyoti',    name:'Jyoti Amol',            initials:'JA' },
 ];
 
 let loginState = { user:null, pin:'', step:'grid', confirmPin:'' };
