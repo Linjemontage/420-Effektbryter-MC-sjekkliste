@@ -263,7 +263,7 @@ table.ct tr.r-na .av-btns{pointer-events:none;opacity:.4}
   <div class="user-grid" id="user-grid"></div>
 </div>
 
-<div id="pin-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:10001;display:none;align-items:center;justify-content:center">
+<div id="pin-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:10001;align-items:center;justify-content:center">
   <div class="pin-screen">
     <div class="login-user-badge" id="pin-user-badge">
       <div class="avatar-sm" id="pin-avatar"></div>
@@ -511,10 +511,6 @@ async function loadCloud(){
   }catch(e){}
   initState();
   setSyncStatus('ok');
-  // Last PIN-koder fra Worker (synkes på tvers av enheter)
-  fetch(WORKER + '/users').then(r => r.ok ? r.json() : {}).then(pins => {
-    window._pins = pins || {};
-  }).catch(() => { window._pins = {}; });
   // Background cloud sync
   fetch(WORKER,{method:'GET'}).then(r=>r.ok?r.json():null).then(data=>{
     if(data&&Object.keys(data).length>0){
@@ -605,7 +601,7 @@ const RIR_LOG = [
   {id:'ID 21', beskrivelse:'RIR - BIL7 - 420 & CB stål', dato:'20251217'},
   {id:'ID 22', beskrivelse:'RIR - BIL4 - Arteche', dato:'20260106'},
   {id:'ID 23', beskrivelse:'RIR - BIL5 - Arteche', dato:'20260106'},
-  {id:'ID 24', beskrivelse:'RIR - Shims', dato:'20260112'},
+  {id:'ID 24', beskrivelse:'RIR - Shims (PG Flow Solutions)', dato:'20260112'},
   {id:'ID 25', beskrivelse:'RIR - BIL1 - Effektbrytere 132kV Hitachi', dato:'20260115'},
   {id:'ID 26', beskrivelse:'RIR - BIL2 - Effektbrytere 132kV Hitachi', dato:'20260119'},
   {id:'ID 27', beskrivelse:'RIR - BIL1 - 420kV Low structures', dato:'20260127'},
@@ -621,14 +617,14 @@ const RIR_LOG = [
   {id:'ID 37', beskrivelse:'RIR - BIL3 - Apparatstål 420kV', dato:'20260204'},
   {id:'ID 38', beskrivelse:'RIR - Bil 8 - Effektbrytere 420kV', dato:'20260204'},
   {id:'ID 39', beskrivelse:'RIR - Bil 9 - Effektbrytere 420kV', dato:'20260204'},
-  {id:'ID 40', beskrivelse:'RIR - HV Clamps Bil 1', dato:'20260217'},
-  {id:'ID 41', beskrivelse:'RIR - Åskmast extension', dato:'20260217'},
-  {id:'ID 42', beskrivelse:'RIR - HV Clamps Bil 2', dato:'20260223'},
-  {id:'ID 43', beskrivelse:'RIR - Stasjonstrafo', dato:'20260305'},
-  {id:'ID 44', beskrivelse:'RIR - Jord lanser', dato:'20260310'},
-  {id:'ID 45', beskrivelse:'RIR - Avledare PexlimQ182', dato:'20260316'},
-  {id:'ID 46', beskrivelse:'RIR - HV Clamps Bil 3', dato:'20260323'},
-  {id:'ID 47', beskrivelse:'RIR - Disconnectors 132', dato:'20260413'},
+  {id:'ID 40', beskrivelse:'RIR - HV Clamps Bil 1 (Subcon)', dato:'20260217'},
+  {id:'ID 41', beskrivelse:'RIR - Åskmast extension (Elteco)', dato:'20260218'},
+  {id:'ID 42', beskrivelse:'RIR - HV Clamps Bil 2 (Subcon)', dato:'20260223'},
+  {id:'ID 43', beskrivelse:'RIR - Stasjonstrafo (Møre Trafo)', dato:'20260309'},
+  {id:'ID 44', beskrivelse:'RIR - Jord lanser (Arcus)', dato:'20260218'},
+  {id:'ID 45', beskrivelse:'RIR - Avledare PexlimQ182 (Hitachi/Subcon)', dato:'20260316'},
+  {id:'ID 46', beskrivelse:'RIR - HV Clamps Bil 3 (Subcon)', dato:'20260325'},
+  {id:'ID 47', beskrivelse:'RIR - Stasjonstrafo (Møre Trafo) - Bil 2', dato:'20260305'},
   {id:'ID 48', beskrivelse:'RIR - BIL1 - Extension stål', dato:'20260504'},
   {id:'ID 49', beskrivelse:'RIR - ALU Pipes (Nedal Aluminium BV)', dato:'20251110'},
 ];
@@ -637,201 +633,163 @@ const RIR_LOG = [
 
 // ── FORHÅNDSUTFYLTE RIR-DATA (fra PDF-er) ──
 const RIR_PREFILL = {
-  'ID 18.01': {
-    reportnr: '18',
-    dato: '2025-11-26',
-    receiver: 'Patrik Gustavsson',
-    project: 'NKF-1005 Skyberg',
-    customer: 'Statnett',
-    supplier: 'ER Elektro AS',
-    origin: 'Nederlandene',
-    packref: '',
-    weight: '',
-    pakking: ['Other'],
-    comments: 'Bardun 095mm2 2+4, L=9400mm. Fra Fremo AS via ER Elektro.',
-    status: { 'Pictures Taken': 'yes', 'Open': 'no', 'Broken': 'no', 'Smashed': 'no', 'Deformed': 'no', 'Soaked/Wet': 'no', 'Rusty/Corroded': 'no' },
-    resultat: 'OK',
-    signert: 'Patrik Gustavsson',
-    lagretDato: '26.11.2025',
-  },
-  'ID 41': {
-    reportnr: '41',
-    dato: '2026-02-18',
-    receiver: 'Patrik Gustavsson',
-    project: 'NKF-1005 Skyberg',
-    customer: 'Statnett',
-    supplier: 'Elteco AS',
-    origin: 'Norge',
-    packref: '',
-    weight: '600',
-    pakking: ['Other'],
-    comments: 'Wood beams. Åskmast extension. Fraktbrev ref. 349300.',
-    status: { 'Pictures Taken': 'yes', 'Open': 'no', 'Broken': 'no', 'Smashed': 'no', 'Deformed': 'no', 'Soaked/Wet': 'no', 'Rusty/Corroded': 'no' },
-    resultat: 'OK',
-    signert: 'Patrik Gustavsson',
-    lagretDato: '18.02.2026',
-  },
-  'ID 45': {
-    reportnr: '45',
-    dato: '2026-03-16',
-    receiver: 'Patrik Gustavsson',
-    project: 'NKF-1005 Skyberg',
-    customer: 'Statnett',
-    supplier: 'Hitachi Energy Sweden AB',
-    origin: 'Sverige',
-    packref: 'NO-1676-P-100098891 / NO-1676-P-100098892',
-    weight: '750',
-    pakking: ['Pallet', 'Metal/Plastic Container'],
-    comments: 'PEXLIM Q182-YV145E, 12 stk. Serial SA030073–SA030084. Sales Order 890180534. Alle bestått rutinetest iht. IEC 60099-4.',
-    status: { 'Pictures Taken': 'yes', 'Open': 'no', 'Broken': 'no', 'Smashed': 'no', 'Deformed': 'no', 'Soaked/Wet': 'no', 'Rusty/Corroded': 'no' },
-    resultat: 'OK',
-    signert: 'Patrik Gustavsson',
-    lagretDato: '16.03.2026',
-  },
-  'ID 18': {
-    reportnr: '18',
-    dato: '2025-12-16',
-    receiver: 'Patrik Gustavsson',
-    project: 'NKF-1005 Skyberg',
-    customer: 'Statnett',
-    ponr: '10029791',
-    supplier: 'Arteche',
-    origin: 'Spain',
-    packref: '',
-    weight: '',
-    pakking: ['Wood box'],
-    comments: 'Lastbil 3/5',
-    status: { 'Pictures Taken': 'yes', 'Open': 'no', 'Broken': 'no', 'Smashed': 'no', 'Deformed': 'no', 'Soaked/Wet': 'no', 'Rusty/Corroded': 'no' },
-    resultat: 'OK',
-    signert: 'Patrik Gustavsson',
-    lagretDato: '16.12.2025',
-  },
-  'ID 49': {
-    reportnr: '',
-    dato: '2025-11-10',
-    receiver: 'Patrik Gustavsson',
-    project: 'NKF-1005 Skyberg',
-    customer: 'Statnett',
-    ponr: '30276I',
-    supplier: 'ER Elektro AS (Nedal Aluminium BV)',
-    origin: 'Nederlandene',
-    packref: 'Booking ref. 17610633',
-    weight: '15089',
-    pakking: ['Other'],
-    comments: 'ALU Pipes. 26 stk aluminiumsrør, 21m. 250x10mm og 160x6mm. Buntat och lastat på träbitar.',
-    status: { 'Pictures Taken': 'yes', 'Open': 'no', 'Broken': 'no', 'Smashed': 'no', 'Deformed': 'no', 'Soaked/Wet': 'no', 'Rusty/Corroded': 'no' },
-    resultat: 'OK',
-    signert: 'Patrik Gustavsson',
-    lagretDato: '11.11.2025',
-  },
-
-  // Batch 2 - fra nye PDF-er
   'ID 01': {
-    reportnr: '1',
-    dato: '2025-06-23',
+    reportnr: '1', dato: '2025-06-23',
     receiver: 'Espen Vestrum, Oppland Elektro',
-    project: 'NKF-1005 Skyberg',
-    customer: 'Statnett',
-    ponr: '404530',
-    supplier: 'EB Elektro',
-    origin: 'Shanghai, China',
+    project: 'NKF-1005 Skyberg', customer: 'Statnett',
+    ponr: '404530', supplier: 'EB Elektro', origin: 'Shanghai, China',
     packref: 'C10-1425 Grey Bottom, 35819. 8 pallets - 72 insulators.',
-    weight: '12288',
-    pakking: ['Pallet', 'Metal/Plastic Container'],
-    comments: 'Utfordrende å losse containere da disse er pakket med truck som går inn i container. Pallene er for små for å kunne bruke vanlig jekketralle inne i container. Lastebilen måtte kjøre bort på Schenker sitt lager for å få hjelp med å laste om inne i container. Som resultat tok lossingen mye lengre tid enn forventet. Estimert 4-5 timer ekstra.',
+    weight: '12288', pakking: ['Pallet', 'Metal/Plastic Container'],
+    comments: 'Utfordrende å losse containere - pallene er for små for vanlig jekketralle. Estimert 4-5 timer ekstra.',
     status: { 'Pictures Taken': 'yes', 'Open': 'no', 'Broken': 'no', 'Smashed': 'no', 'Deformed': 'no', 'Soaked/Wet': 'no', 'Rusty/Corroded': 'no', 'Water tight': 'no', 'Sealed': 'no' },
-    resultat: 'OK',
-    signert: 'Espen Vestrum',
-    lagretDato: '23.06.2025',
+    resultat: 'OK', signert: 'Espen Vestrum', lagretDato: '23.06.2025',
+    vedlegg: ['C10-1425_Bottom_Insulators_-_Reception_Inspection_Report-.pdf'],
   },
   'ID 02': {
-    reportnr: '2',
-    dato: '2025-06-23',
+    reportnr: '2', dato: '2025-06-23',
     receiver: 'Espen Vestrum, Oppland Elektro',
-    project: 'NKF-1005 Skyberg',
-    customer: 'Statnett',
-    ponr: '404530',
-    supplier: 'EB Elektro',
-    origin: 'Shanghai, China',
+    project: 'NKF-1005 Skyberg', customer: 'Statnett',
+    ponr: '404530', supplier: 'EB Elektro', origin: 'Shanghai, China',
     packref: 'C10-1425 Grey Top, 35819. 8 pallets - 72 insulators.',
-    weight: '11216',
-    pakking: ['Pallet', 'Metal/Plastic Container'],
-    comments: 'Utfordrende å losse containere da disse er pakket med truck som går inn i container. Pallene er for små for å kunne bruke vanlig jekketralle inne i container. Lastebilen måtte kjøre bort på Schenker sitt lager for å få hjelp med å laste om inne i container. Som resultat tok lossingen mye lengre tid enn forventet. Estimert 4-5 timer ekstra.',
+    weight: '11216', pakking: ['Pallet', 'Metal/Plastic Container'],
+    comments: 'Utfordrende å losse containere - pallene er for små for vanlig jekketralle. Estimert 4-5 timer ekstra.',
     status: { 'Pictures Taken': 'yes', 'Open': 'no', 'Broken': 'no', 'Smashed': 'no', 'Deformed': 'no', 'Soaked/Wet': 'no', 'Rusty/Corroded': 'no', 'Water tight': 'no', 'Sealed': 'no' },
-    resultat: 'OK',
-    signert: 'Espen Vestrum',
-    lagretDato: '23.06.2025',
+    resultat: 'OK', signert: 'Espen Vestrum', lagretDato: '23.06.2025',
+    vedlegg: ['C10-1425_Top_Insulators_-_Reception_Inspection_Report.pdf'],
   },
   'ID 03': {
-    reportnr: '3',
-    dato: '2025-06-23',
+    reportnr: '3', dato: '2025-06-23',
     receiver: 'Espen Vestrum, Oppland Elektro',
-    project: 'NKF-1005 Skyberg',
-    customer: 'Statnett',
-    ponr: '404530',
-    supplier: 'EB Elektro',
-    origin: 'Shanghai, China',
-    packref: 'C8-650 34513A. 7 pallets - 67 insulators.',
-    weight: '11216',
-    pakking: ['Pallet', 'Metal/Plastic Container'],
-    comments: 'Utfordrende å losse containere da disse er pakket med truck som går inn i container. Pallene er for små for å kunne bruke vanlig jekketralle inne i container. Lastebilen måtte kjøre bort på Schenker sitt lager for å få hjelp med å laste om inne i container. Som resultat tok lossingen mye lengre tid enn forventet. Estimert 4-5 timer ekstra.',
+    project: 'NKF-1005 Skyberg', customer: 'Statnett',
+    ponr: '404530', supplier: 'EB Elektro', origin: 'Shanghai, China',
+    packref: 'C8-650 34513A, 7 pallets - 67 insulators.',
+    weight: '11216', pakking: ['Pallet', 'Metal/Plastic Container'],
+    comments: 'Utfordrende å losse containere - pallene er for små for vanlig jekketralle. Estimert 4-5 timer ekstra.',
     status: { 'Pictures Taken': 'yes', 'Open': 'no', 'Broken': 'no', 'Smashed': 'no', 'Deformed': 'no', 'Soaked/Wet': 'no', 'Rusty/Corroded': 'no', 'Water tight': 'no', 'Sealed': 'no' },
-    resultat: 'OK',
-    signert: 'Espen Vestrum',
-    lagretDato: '23.06.2025',
+    resultat: 'OK', signert: 'Espen Vestrum', lagretDato: '23.06.2025',
+    vedlegg: ['C8-650_34513A_Insulators_-_Reception_Inspection_Report.pdf'],
+  },
+  'ID 18': {
+    reportnr: '18', dato: '2025-12-16',
+    receiver: 'Patrik Gustavsson',
+    project: 'NKF-1005 Skyberg', customer: 'Statnett',
+    ponr: '10029791', supplier: 'Arteche', origin: 'Spain',
+    packref: '', weight: '', pakking: ['Wood box'],
+    comments: 'Lastbil 3/5.',
+    status: { 'Pictures Taken': 'yes', 'Open': 'no', 'Broken': 'no', 'Smashed': 'no', 'Deformed': 'no', 'Soaked/Wet': 'no', 'Rusty/Corroded': 'no' },
+    resultat: 'OK', signert: 'Patrik Gustavsson', lagretDato: '16.12.2025',
+    vedlegg: ['Skanna___2025-12-16_12_17_14.pdf'],
+  },
+  'ID 18.01': {
+    reportnr: '18', dato: '2025-11-26',
+    receiver: 'Patrik Gustavsson',
+    project: 'NKF-1005 Skyberg', customer: 'Statnett',
+    ponr: '10029791', supplier: 'Fremo AS', origin: 'Portugal',
+    packref: 'Følgeseddel 3136', weight: '', pakking: ['Other'],
+    comments: 'Bardun 095mm2 2+4, L=9400mm. 40 stk. Ordre 113035/1.',
+    status: { 'Pictures Taken': 'yes', 'Open': 'no', 'Broken': 'no', 'Smashed': 'no', 'Deformed': 'no', 'Soaked/Wet': 'no', 'Rusty/Corroded': 'no' },
+    resultat: 'OK', signert: 'Patrik Gustavsson', lagretDato: '26.11.2025',
+    vedlegg: ['RIR_-_Bardun_095mm2.pdf', 'Skanna___2025-12-16_12_17_14.pdf'],
   },
   'ID 24': {
-    reportnr: '24',
-    dato: '2026-01-12',
+    reportnr: '24', dato: '2026-01-12',
     receiver: 'Patrik Gustavsson',
-    project: 'NKF-1005 Skyberg',
-    customer: 'Statnett',
-    supplier: 'PG Flow Solutions AS',
-    origin: 'Norge',
-    packref: 'PG Nr. 202514186 / 202514628',
-    weight: '',
-    pakking: ['Pallet'],
-    comments: 'Lastbil 3/5. Shims 310x100mm: 3mm (32 stk), 5mm (32 stk), 10mm (32 stk) x2 leveranser. NFK1005-010 S-029 Shimplates.',
+    project: 'NKF-1005 Skyberg', customer: 'Statnett',
+    supplier: 'PG Flow Solutions AS', origin: 'Norge',
+    packref: 'PG Nr. 202514186 / 202514628', weight: '', pakking: ['Pallet'],
+    comments: 'Lastbil 3/5. Shims 310x100mm (3mm, 5mm, 10mm). 96 stk per type.',
     status: { 'Pictures Taken': 'yes', 'Open': 'no', 'Broken': 'no', 'Smashed': 'no', 'Deformed': 'no', 'Soaked/Wet': 'no', 'Rusty/Corroded': 'no' },
-    resultat: 'OK',
-    signert: 'Patrik Gustavsson',
-    lagretDato: '12.01.2026',
+    resultat: 'OK', signert: 'Patrik Gustavsson', lagretDato: '12.01.2026',
+    vedlegg: ['RIR_-_Shims.pdf', 'Skanna___2026-01-12_15_05_39.pdf'],
+  },
+  'ID 40': {
+    reportnr: '40', dato: '2026-02-17',
+    receiver: 'Patrik Gustavsson',
+    project: 'NKF-1005 Skyberg', customer: 'Statnett',
+    ponr: '404937', supplier: 'Subcon (PLP SubCon GmbH)', origin: 'Østerrike',
+    packref: 'L260098 / L260101', weight: '2885', pakking: ['Wood box'],
+    comments: 'HV Clamps - Bil 1/3. 8 paller. CMR LAU8483024009.',
+    status: { 'Pictures Taken': 'yes', 'Open': 'no', 'Broken': 'no', 'Smashed': 'no', 'Deformed': 'no', 'Soaked/Wet': 'no', 'Rusty/Corroded': 'no' },
+    resultat: 'OK', signert: 'Patrik Gustavsson', lagretDato: '17.02.2026',
+    vedlegg: ['RIR_-_HV_Clamps_-_Bil_1.pdf', 'Skanna___2026-02-17_10_33_18.pdf', 'L260098.pdf', 'L260101.pdf', 'Packinglist.pdf'],
+  },
+  'ID 41': {
+    reportnr: '41', dato: '2026-02-18',
+    receiver: 'Patrik Gustavsson',
+    project: 'NKF-1005 Skyberg', customer: 'Statnett',
+    supplier: 'Elteco AS', origin: 'Norge',
+    packref: 'NFK1007-002-018 Skyberg Extension', weight: '545', pakking: ['Other'],
+    comments: 'Wood beams. Åskmast extension. 6 metalrør. Utlevert 18 FEB 2026 Toten Oslo Term.',
+    status: { 'Pictures Taken': 'yes', 'Open': 'no', 'Broken': 'no', 'Smashed': 'no', 'Deformed': 'no', 'Soaked/Wet': 'no', 'Rusty/Corroded': 'no' },
+    resultat: 'OK', signert: 'Patrik Gustavsson', lagretDato: '18.02.2026',
+    vedlegg: ['RIR_-_Åskmast_extension.pdf', 'Skanna___2026-02-18_11_51_21.pdf'],
+  },
+  'ID 42': {
+    reportnr: '42', dato: '2026-02-23',
+    receiver: 'Patrik Gustavsson',
+    project: 'NKF-1005 Skyberg', customer: 'Statnett',
+    ponr: '404937', supplier: 'Subcon (PLP SubCon GmbH)', origin: 'Østerrike',
+    packref: '', weight: '2024', pakking: ['Wood box'],
+    comments: 'HV Clamps - Bil 2/3. 6 paller. CMR LAU8489506512.',
+    status: { 'Pictures Taken': 'yes', 'Open': 'no', 'Broken': 'no', 'Smashed': 'no', 'Deformed': 'no', 'Soaked/Wet': 'no', 'Rusty/Corroded': 'no' },
+    resultat: 'OK', signert: 'Patrik Gustavsson', lagretDato: '23.02.2026',
+    vedlegg: ['RIR_-_HV_Clamps_-_Bil_2.pdf', 'Skanna___2026-02-23_14_26_51.pdf'],
   },
   'ID 43': {
-    reportnr: '43',
-    dato: '2026-03-05',
+    reportnr: '47', dato: '2026-03-05',
     receiver: 'Patrik Gustavsson',
-    project: 'NKF-1005 Skyberg',
-    customer: 'Statnett',
-    supplier: 'Møre Trafo AS',
-    origin: 'Norge',
-    packref: 'Følgeseddel-03, Leveringsnummer 207933',
-    weight: '1840',
-    pakking: ['Other'],
-    comments: 'Wood beams. Stasjonstrafo / Oljetransformator. Ordr.nr 0000083314, Partinummer 2600010. NFK1005-002-022.',
+    project: 'NKF-1005 Skyberg', customer: 'Statnett',
+    supplier: 'Møre Trafo AS', origin: 'Norge',
+    packref: 'NFK1005-002-022', weight: '1840', pakking: ['Other'],
+    comments: 'Stasjonstrafo - Oljetransformator. 1 STK. Leveringsnummer 207933. Wood beams.',
     status: { 'Pictures Taken': 'yes', 'Open': 'no', 'Broken': 'no', 'Smashed': 'no', 'Deformed': 'no', 'Soaked/Wet': 'no', 'Rusty/Corroded': 'no' },
-    resultat: 'OK',
-    signert: 'Patrik Gustavsson',
-    lagretDato: '05.03.2026',
+    resultat: 'OK', signert: 'Patrik Gustavsson', lagretDato: '05.03.2026',
+    vedlegg: ['RIR_-_Stasjonstrafo.pdf', 'Skanna___2026-03-09_16_40_56.pdf'],
   },
-
-  'ID 40': {
-    reportnr: '40',
-    dato: '2026-02-17',
+  'ID 44': {
+    reportnr: '44', dato: '2026-02-18',
     receiver: 'Patrik Gustavsson',
-    project: 'NKF-1005 Skyberg',
-    customer: 'Statnett',
-    ponr: '404937',
-    supplier: 'PLP SubCon GmbH (via EB Elektro)',
-    origin: 'Østerrike',
-    packref: 'Packlist L260098 (420kV B250322) + L260101 (132kV B250321)',
-    weight: '2885',
-    pakking: ['Pallet'],
-    comments: 'HV Clamps Bil 1. L260098: 420kV klemmer, 1399 kg, shipped 04/02/2026. L260101: 132kV klemmer, 1486 kg, shipped 05/02/2026. PLP SubCon, Dornbirn Austria.',
+    project: 'NKF-1005 Skyberg', customer: 'Statnett',
+    supplier: 'Arcus Elektrotechnik (Alois Schiffmann GmbH)', origin: 'Tyskland',
+    packref: 'Delivery Note 5079456', weight: '1794', pakking: ['Wood box', 'Paper box'],
+    comments: 'Jord lanser. 1 wooden case / 2 palettes. Order NKF1005-002-019. Earthing lances for 420kV og 145kV.',
     status: { 'Pictures Taken': 'yes', 'Open': 'no', 'Broken': 'no', 'Smashed': 'no', 'Deformed': 'no', 'Soaked/Wet': 'no', 'Rusty/Corroded': 'no' },
-    resultat: 'OK',
-    signert: 'Patrik Gustavsson',
-    lagretDato: '17.02.2026',
+    resultat: 'OK', signert: 'Patrik Gustavsson', lagretDato: '18.02.2026',
+    vedlegg: ['RIR_-_Jord_lanser.pdf', 'Skanna___2026-03-10_14_38_55.pdf'],
+  },
+  'ID 45': {
+    reportnr: '45', dato: '2026-03-16',
+    receiver: 'Patrik Gustavsson',
+    project: 'NKF-1005 Skyberg', customer: 'Statnett',
+    supplier: 'Hitachi Energy Sweden AB', origin: 'Sverige',
+    packref: 'NO-1676-P-100098891 / NO-1676-P-100098892', weight: '750',
+    pakking: ['Pallet', 'Metal/Plastic Container'],
+    comments: 'PEXLIM Q182-YV145E, 12 stk. Serial SA030073-SA030084. Sales Order 890180534. Alle bestått rutinetest iht. IEC 60099-4.',
+    status: { 'Pictures Taken': 'yes', 'Open': 'no', 'Broken': 'no', 'Smashed': 'no', 'Deformed': 'no', 'Soaked/Wet': 'no', 'Rusty/Corroded': 'no' },
+    resultat: 'OK', signert: 'Patrik Gustavsson', lagretDato: '16.03.2026',
+    vedlegg: ['RIR_-_Avledare_PexlimQ182.pdf', 'PL_890180534.pdf', '890180534-1.pdf'],
+  },
+  'ID 46': {
+    reportnr: '46', dato: '2026-03-25',
+    receiver: 'Patrik Gustavsson',
+    project: 'NKF-1005 Skyberg', customer: 'Statnett',
+    ponr: '404937', supplier: 'Subcon (PLP SubCon GmbH)', origin: 'Østerrike',
+    packref: 'L260211 / L260212 / L260213', weight: '1900', pakking: ['Other'],
+    comments: 'HV Clamps - Bil 3/3. 6 kolli. CMR LAU8508659862.',
+    status: { 'Pictures Taken': 'yes', 'Open': 'no', 'Broken': 'no', 'Smashed': 'no', 'Deformed': 'no', 'Soaked/Wet': 'no', 'Rusty/Corroded': 'no' },
+    resultat: 'OK', signert: 'Patrik Gustavsson', lagretDato: '25.03.2026',
+    vedlegg: ['Skanna___2026-03-25_11_34_06.pdf'],
+  },
+  'ID 49': {
+    reportnr: '', dato: '2025-11-10',
+    receiver: 'Patrik Gustavsson',
+    project: 'NKF-1005 Skyberg', customer: 'Statnett',
+    ponr: '30276I', supplier: 'EB Elektro AS (Nedal Aluminium BV)', origin: 'Nederlandene',
+    packref: 'Booking ref. 17610633', weight: '15089', pakking: ['Other'],
+    comments: 'ALU Pipes. 26 stk aluminiumsrør 21m. 250x10mm og 160x6mm. Buntat och lastat på träbitar.',
+    status: { 'Pictures Taken': 'yes', 'Open': 'no', 'Broken': 'no', 'Smashed': 'no', 'Deformed': 'no', 'Soaked/Wet': 'no', 'Rusty/Corroded': 'no' },
+    resultat: 'OK', signert: 'Patrik Gustavsson', lagretDato: '10.11.2025',
+    vedlegg: ['RIR_-_ALU_Pipes.pdf', 'Fraktsedel.pdf', 'BOM_Aluminium_Pipesrev_01.pdf'],
   },
 };
 
@@ -876,9 +834,10 @@ function renderRIR() {
     const saved = rir.rapporter[r.id] || {};
     const status = saved.resultat || '';
     const statusColor = status === 'OK' ? '#2d7a4f' : status === 'Avvik' ? '#c0392b' : '#888';
+    const hasVedlegg = saved.vedlegg && saved.vedlegg.length > 0;
     return `<tr style="border-bottom:1px solid #f0f0f0;cursor:pointer" onclick="showRIRDetail('${r.id}')" onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background=''">
       <td style="padding:8px 10px;color:#888;font-size:12px;white-space:nowrap">${r.id}</td>
-      <td style="padding:8px 10px;font-size:13px;color:#1a2744">${r.beskrivelse}</td>
+      <td style="padding:8px 10px;font-size:13px;color:#1a2744">${r.beskrivelse}${hasVedlegg ? ` <span style="font-size:10px;color:#1a4a8a" title="${saved.vedlegg.length} vedlegg">📎${saved.vedlegg.length}</span>` : ''}</td>
       <td style="padding:8px 10px;font-size:12px;color:#555;white-space:nowrap">${formatDato(r.dato)}</td>
       <td style="padding:8px 10px;text-align:center">
         ${status ? `<span style="background:${statusColor};color:#fff;border-radius:10px;padding:2px 8px;font-size:11px;font-weight:600">${status}</span>` : '<span style="color:#ccc;font-size:11px">—</span>'}
@@ -894,6 +853,14 @@ function renderRIR() {
           <div style="font-size:13px;color:#888">Reception Inspection Report — Skyberg · Statnett</div>
         </div>
         <button onclick="showRIRForm('ny')" style="background:#1a6b3a;color:#fff;border:none;border-radius:8px;padding:10px 18px;font-size:13px;font-weight:600;cursor:pointer">+ Ny RIR</button>
+      </div>
+
+      <div style="background:#f0f7ff;border:1px solid #0052cc;border-radius:8px;padding:12px 14px;margin-bottom:16px;display:flex;gap:12px;align-items:flex-start">
+        <div style="font-size:18px">ℹ️</div>
+        <div style="font-size:13px;color:#0052cc">
+          <strong style="display:block;margin-bottom:4px">Vedlegg lagres permanent</strong>
+          <div style="font-size:12px;opacity:.9">Alle bilder og dokumenter som lastes opp på nye RIRer lagres automatisk og forsvinner aldri. De gamle RIR-skjemaene er allerede fylte ut.</div>
+        </div>
       </div>
 
       <div style="background:#fff;border-radius:12px;border:1px solid #e5e7eb;overflow:hidden;margin-bottom:20px">
@@ -997,6 +964,21 @@ function showRIRForm(id, entry, saved) {
         <textarea id="rir_comments" style="width:100%;height:100px;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:13px;resize:vertical" placeholder="Kommentarer...">${saved.comments||''}</textarea>
       </div>
 
+      <div style="background:#fff;border-radius:12px;border:1px solid #e5e7eb;padding:20px;margin-bottom:16px">
+        <div style="font-size:13px;font-weight:700;color:#fff;background:#1a4a8a;padding:8px 12px;border-radius:6px;margin-bottom:12px">📎 Vedlegg (${(saved.vedlegg && saved.vedlegg.length) || 0})</div>
+        ${(saved.vedlegg && saved.vedlegg.length) ? `
+        <div style="margin-bottom:12px">
+          <ul style="list-style:none;padding:0;margin:0">
+            ${saved.vedlegg.map(f => `<li style="padding:6px 0;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;gap:8px;font-size:13px;color:#333"><span style="color:#2d5be3;font-size:14px">📄</span>${f}</li>`).join('')}
+          </ul>
+        </div>` : `<div style="color:#aaa;font-size:13px;padding:8px 0;margin-bottom:12px">Ingen vedlegg lastet opp</div>`}
+        <button onclick="triggerRIRUpload('${id}')" style="background:#2d5be3;color:#fff;border:none;border-radius:6px;padding:8px 14px;font-size:12px;font-weight:600;cursor:pointer">+ Legg til vedlegg</button>
+        <input type="file" id="rir_vedlegg_input_${id}" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" multiple style="display:none" onchange="uploadRIRVedlegg(this,'${id}')">
+        <div style="margin-top:8px;padding:8px;background:#f0f7ff;border-radius:6px;font-size:11px;color:#0052cc;border-left:3px solid #0052cc">
+          ✓ Vedlegg lagres permanent og forsvinner aldri
+        </div>
+      </div>
+
       <div style="display:flex;gap:10px;justify-content:flex-end">
         <div style="margin-right:auto;display:flex;align-items:center;gap:8px">
           <label style="font-size:12px;color:#888">Resultat:</label>
@@ -1020,6 +1002,74 @@ function rirTogglePakking(option, checked) {
   if (checked) { if (!window._rirPakking.includes(option)) window._rirPakking.push(option); }
   else { window._rirPakking = window._rirPakking.filter(o => o !== option); }
 }
+
+function triggerRIRUpload(id) {
+  document.getElementById('rir_vedlegg_input_' + id)?.click();
+}
+
+async function uploadRIRVedlegg(input, id) {
+  if (!input.files || input.files.length === 0) return;
+  if (!window.currentUser) { toast('Logg inn først'); return; }
+  
+  const rir = getRIRState();
+  if (!rir.rapporter[id]) rir.rapporter[id] = {};
+  if (!rir.rapporter[id].vedlegg) rir.rapporter[id].vedlegg = [];
+  
+  const files = Array.from(input.files);
+  let uploaded = 0;
+  
+  for (const file of files) {
+    try {
+      // Konverter fil til base64
+      const reader = new FileReader();
+      reader.onload = async () => {
+        const base64 = reader.result.split(',')[1];
+        const filename = file.name;
+        const fileKey = `rir_vedlegg_${id}_${filename}`;
+        
+        // Lagre i Cloud som base64
+        const cloudKey = `vedlegg/${id}/${filename}`;
+        const metadata = {
+          name: filename,
+          size: file.size,
+          type: file.type,
+          uploaded: new Date().toISOString(),
+          uploadedBy: window.currentUser.name
+        };
+        
+        try {
+          await saveToCFR2(cloudKey, base64, metadata);
+          
+          // Legg til i state
+          if (!rir.rapporter[id].vedlegg.includes(filename)) {
+            rir.rapporter[id].vedlegg.push(filename);
+          }
+          uploaded++;
+          
+          state.__rir__ = rir;
+          save();
+          
+          if (uploaded === files.length) {
+            toast(uploaded + ' vedlegg opplastet og lagret ✓');
+            // Refresh form
+            const entry = RIR_LOG.find(r => r.id === id);
+            showRIRForm(id, entry, rir.rapporter[id]);
+          }
+        } catch (e) {
+          console.error('Cloud-lagring feilet:', filename, e);
+          toast('Feil ved lagring: ' + filename);
+        }
+      };
+      reader.readAsDataURL(file);
+    } catch(e) {
+      console.error('Opplasting feilet:', file.name, e);
+    }
+  }
+  
+  // Reset file input
+  input.value = '';
+}
+
 
 function saveRIR(id) {
   const rir = getRIRState();
@@ -1051,6 +1101,7 @@ function saveRIR(id) {
     resultat: document.getElementById('rir_resultat')?.value || '',
     signert: window.currentUser?.name || '',
     lagretDato: new Date().toLocaleDateString('no-NO'),
+    vedlegg: rir.rapporter[id]?.vedlegg || [],
   };
 
   state.__rir__ = rir;
@@ -1481,6 +1532,9 @@ function renderSheet(mcid,sheetName){
       <button class="img-upload-btn" onclick="triggerImageUpload('${mcid}','${sheetName.replace(/'/g,"\\'")}')">
         📎 Last opp bilde
       </button>
+      <button class="img-upload-btn" onclick="loadImages('${mcid}','${sheetName.replace(/'/g,"\\'")}',true)" style="background:#1a4a8a;margin-left:8px">
+        🔄 Vis bilder
+      </button>
       <input type="file" id="img-input-${mcid}-${sheetName.replace(/[^a-zA-Z0-9]/g,'-')}" accept="image/*" multiple style="display:none" onchange="uploadImages(this,'${mcid}','${sheetName.replace(/'/g,"\\'")}')">
     </div>
   </div>`;
@@ -1700,28 +1754,29 @@ function imgGridId(mcid, sn) {
   return 'img-grid-' + mcid + '-' + sn.replace(/[^a-zA-Z0-9]/g,'-');
 }
 
-async function loadImages(mcid, sn) {
+async function loadImages(mcid, sn, force=false) {
   const gridId = imgGridId(mcid, sn);
   const grid = document.getElementById(gridId);
   if (!grid) return;
-
+  if (force) grid.innerHTML = '<div style="color:#aaa;font-size:13px;grid-column:1/-1">Henter bilder...</div>';
   try {
-    const key = encodeURIComponent(mcid + '/' + sn);
     const res = await fetch(WORKER + '/imagelist/' + mcid + '/' + encodeURIComponent(sn));
+    if (!res.ok) throw new Error('HTTP ' + res.status);
     const images = await res.json();
-
     if (!Array.isArray(images) || images.length === 0) {
       grid.innerHTML = '<div style="color:#aaa;font-size:13px;grid-column:1/-1">Ingen bilder lastet opp</div>';
+      if (force) toast('Ingen bilder funnet');
       return;
     }
-
     grid.innerHTML = images.map(img => `
       <div class="img-thumb" onclick="openLightbox('${img.url}')">
         <img src="${img.url}" alt="bilde" loading="lazy">
         ${window.currentUser?.id === 'helge' ? `<button class="img-del" onclick="event.stopPropagation();deleteImage('${img.key}','${mcid}','${sn}')">✕</button>` : ''}
       </div>`).join('');
+    if (force) toast(images.length + ' bilde(r) hentet ✓');
   } catch(e) {
-    grid.innerHTML = '<div style="color:#c0392b;font-size:13px;grid-column:1/-1">Kunne ikke laste bilder</div>';
+    grid.innerHTML = '<div style="color:#c0392b;font-size:13px;grid-column:1/-1">Feil: ' + e.message + '</div>';
+    if (force) toast('Feil ved henting: ' + e.message);
   }
 }
 
@@ -1745,7 +1800,8 @@ async function uploadImages(input, mcid, sn) {
     }
     // Compress image before upload
     const compressed = await compressImage(file, 1200, 0.8);
-    const key = mcid + '/' + sn + '/' + Date.now() + '-' + file.name.replace(/[^a-zA-Z0-9._-]/g,'_');
+    const safeFile = Date.now() + '-' + file.name.replace(/[^a-zA-Z0-9._-]/g,'_');
+    const key = mcid + '/' + sn + '/' + safeFile;
     try {
       await fetch(WORKER + '/images/' + encodeURIComponent(key), {
         method: 'PUT',
@@ -1874,7 +1930,7 @@ function selectUser(userId) {
   document.getElementById('pin-avatar').textContent = user.initials;
   document.getElementById('pin-username').textContent = user.name;
 
-  const hasPin = !!(window._pins && window._pins[userId]);
+  const hasPin = !!localStorage.getItem('pin_' + userId);
   if (hasPin) {
     loginState.step = 'enter';
     document.getElementById('pin-title').textContent = 'Skriv inn PIN';
@@ -1922,7 +1978,7 @@ function processPin() {
   const { user, pin, step } = loginState;
 
   if (step === 'enter') {
-    const stored = window._pins && window._pins[user.id];
+    const stored = localStorage.getItem('pin_' + user.id);
     if (pin === stored) {
       window.currentUser = user;
       document.getElementById('current-user-label').textContent = user.name;
@@ -1949,9 +2005,7 @@ function processPin() {
 
   } else if (step === 'confirm') {
     if (pin === loginState.confirmPin) {
-      if (!window._pins) window._pins = {};
-      window._pins[user.id] = pin;
-      fetch(WORKER + '/users', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(window._pins) }).catch(()=>{});
+      localStorage.setItem('pin_' + user.id, pin);
       window.currentUser = user;
       document.getElementById('current-user-label').textContent = user.name;
       document.getElementById('login-screen').style.display = 'none';
@@ -1970,6 +2024,40 @@ function processPin() {
       }, 900);
     }
   }
+}
+
+// ── CLOUD VEDLEGG-LAGRING ──
+async function saveToCFR2(key, base64Content, metadata) {
+  // Lagre vedlegg base64 i localStorage som backup
+  const storageKey = `rir_ved_${key.replace(/[\/\\]/g, '_')}`;
+  const storageData = { base64: base64Content, meta: metadata, timestamp: Date.now() };
+  
+  try {
+    localStorage.setItem(storageKey, JSON.stringify(storageData));
+    console.log('Vedlegg lagret lokalt:', key);
+    return true;
+  } catch (e) {
+    console.error('Lokal lagring feilet (storage full?):', e);
+    // Fallback: lagre bare metadata
+    try {
+      localStorage.setItem(storageKey, JSON.stringify({ meta: metadata, timestamp: Date.now() }));
+      return true;
+    } catch (e2) {
+      throw new Error('Kan ikke lagre vedlegg: ' + e2.message);
+    }
+  }
+}
+
+// ── LAST VEDLEGG FRA CLOUD ──
+function getVedlegg(id, filename) {
+  const storageKey = `rir_ved_vedlegg/${id}/${filename}`.replace(/[\/\\]/g, '_');
+  try {
+    const data = JSON.parse(localStorage.getItem(storageKey) || '{}');
+    if (data.base64) return data.base64;
+  } catch (e) {
+    console.error('Kunne ikke laste vedlegg fra cloud:', storageKey);
+  }
+  return null;
 }
 
 // ── INIT ──
