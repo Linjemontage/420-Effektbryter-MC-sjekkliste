@@ -307,6 +307,7 @@ table.ct tr.r-na .av-btns{pointer-events:none;opacity:.4}
     <div class="dot" id="dot"></div>
     <span id="current-user-label" style="font-size:12px;color:#888;margin-right:2px"></span>
     <button class="btn" onclick="showHome()">🏠 Hjem</button>
+    <button class="btn" onclick="manualSync()" title="Hent siste data fra sky">🔄 Oppdater</button>
     <button class="btn" onclick="switchUser()" style="border-color:#1a2744;color:#1a2744" title="Bytt bruker">⇄ Bytt bruker</button>
     <button class="btn btn-primary" onclick="exportPDF()">PDF</button>
   </div>
@@ -1585,10 +1586,11 @@ function buildChangelog(mcid,sheetName){
   const items=MC_DATA[mcid]?.[sheetName]?.items||[];
   const hasLog=s.rows.some(r=>r.changelog&&r.changelog.length>0);
   if(!hasLog) return '';
+  const isHelge = window.currentUser?.id === 'helge';
   let rows='';
   s.rows.forEach((r,i)=>{
     if(!r.changelog||!r.changelog.length) return;
-    r.changelog.forEach(log=>{
+    r.changelog.forEach((log,logIdx)=>{
       const fraC=log.fra==='ja'?'#ffe0e0':log.fra==='nei'?'#dcfce7':'#f0f0f0';
       const tilC=log.til==='ja'?'#ffe0e0':log.til==='nei'?'#dcfce7':'#f0f0f0';
       rows+=`<tr style="border-bottom:1px solid #f0f0f0">
@@ -1601,15 +1603,17 @@ function buildChangelog(mcid,sheetName){
         <td style="padding:6px 8px;font-size:12px">${esc(log.kommentar)}</td>
         <td style="padding:6px 8px;font-size:11px;font-weight:500">${esc(log.sign)}</td>
         <td style="padding:6px 8px;font-size:10px;color:#888;white-space:nowrap">${log.tid}</td>
+        ${isHelge ? `<td style="padding:6px 8px;text-align:center"><button onclick="deleteChangelogEntry('${mcid}','${sheetName.replace(/'/g,"\\'")}',${i},${logIdx})" style="background:none;border:none;color:#c0392b;cursor:pointer;font-size:14px;padding:0 4px" title="Slett denne linjen">✕</button></td>` : '<td></td>'}
       </tr>`;
     });
   });
   if(!rows) return '';
+  const headers = ['#','Element','Metode','Fra','','Til','Kommentar','Signert av','Tidspunkt', isHelge?'Slett':''];
   return `<div style="margin-top:16px;background:#fff;border:1px solid #e0e0e0;border-radius:8px;overflow:hidden">
     <div style="padding:10px 14px;font-weight:600;font-size:13px;border-bottom:1px solid #eee;background:#f8f8f8;color:#1a2744">✎ Changelog — Endringslogg</div>
     <div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse">
       <thead><tr style="background:#f8f8f8">
-        ${['#','Element','Metode','Fra','','Til','Kommentar','Signert av','Tidspunkt'].map(h=>`<th style="padding:7px 8px;text-align:left;font-size:10px;text-transform:uppercase;color:#888;border-bottom:1px solid #eee">${h}</th>`).join('')}
+        ${headers.map(h=>`<th style="padding:7px 8px;text-align:left;font-size:10px;text-transform:uppercase;color:#888;border-bottom:1px solid #eee">${h}</th>`).join('')}
       </tr></thead>
       <tbody>${rows}</tbody>
     </table></div>
@@ -1619,7 +1623,33 @@ function buildChangelog(mcid,sheetName){
 // ── ACTIONS ──
 function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');}
 function updMeta(mcid,sn,f,v){if(state[mcid]?.sheets[sn])state[mcid].sheets[sn].meta[f]=v;save();}
-function isReadOnly(){ return window.currentUser?.readOnly === true; }
+async function manualSync() {
+  setSyncStatus('syncing');
+  try {
+    const r = await fetch(WORKER, {method:'GET'});
+    if (!r.ok) { setSyncStatus('err'); toast('Synkronisering feilet'); return; }
+    const data = await r.json();
+    if (data && Object.keys(data).length > 0) {
+      state = data;
+      _lastCloudJson = JSON.stringify(data);
+      initState();
+      buildSidebar();
+      if (currentSheet) renderSheet(currentMC, currentSheet);
+      else if (!currentMC) showHome();
+      setSyncStatus('ok');
+      toast('Data oppdatert ✓');
+    }
+  } catch(e) { setSyncStatus('err'); toast('Synkronisering feilet'); }
+}
+
+function deleteChangelogEntry(mcid, sn, rowIdx, logIdx) {
+  if (window.currentUser?.id !== 'helge') return;
+  if (!confirm('Slette denne endringsloggen?')) return;
+  if (!state[mcid]?.sheets[sn]?.rows[rowIdx]?.changelog) return;
+  state[mcid].sheets[sn].rows[rowIdx].changelog.splice(logIdx, 1);
+  save();
+  renderSheet(mcid, sn);
+}
 
 function updRow(mcid,sn,i,f,v){if(isReadOnly()){toast('Kun lesetilgang');return;}if(state[mcid]?.sheets[sn])state[mcid].sheets[sn].rows[i][f]=v;save();}
 function autoResize(el){
@@ -1917,6 +1947,7 @@ const USERS = [
   { id:'alexander',name:'Alexander Nani',        initials:'AN' },
   { id:'hugo',     name:'Hugo Cardoso',          initials:'HC' },
   { id:'jyoti',    name:'Jyoti Amol',            initials:'JA' },
+  { id:'henningb', name:'Henning Bjorgan',       initials:'HB' },
 ];
 
 let loginState = { user:null, pin:'', step:'grid', confirmPin:'' };
