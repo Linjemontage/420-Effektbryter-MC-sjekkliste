@@ -1117,6 +1117,17 @@ function showChangelog(){
   
   const versions=[
     {
+      ver:'1.6.0',
+      dato:'20.05.2026',
+      endringer:[
+        'Bilde-visning fikset — "Vis bilder"-knapp for tvangshenting fra Cloudflare',
+        '7 nye brukere opprettet (Espen, Even, Jon Edvard, Magnus, Mathias, Vemund, Henning)',
+        'Endringslogg (changelog) nullstilt i alle sjekklister',
+        'Gamle RIR-skjemaer (14 stk) fylte ut med prefill-data',
+        'Permanent vedlegg-lagring for nye RIR-rapporter',
+      ]
+    },
+    {
       ver:'1.5.0',
       dato:'15.05.2026',
       endringer:[
@@ -1196,7 +1207,7 @@ function showChangelog(){
           <span style="font-size:15px;font-weight:700">v${v.ver}</span>
           <span style="font-size:11px;opacity:.7;margin-left:10px">${v.dato}</span>
         </div>
-        ${v.ver==='1.4.0'?'<span style="background:#2d5be3;color:#fff;font-size:10px;padding:2px 8px;border-radius:10px;font-weight:600">SISTE</span>':''}
+        ${v.ver==='1.6.0'?'<span style="background:#2d5be3;color:#fff;font-size:10px;padding:2px 8px;border-radius:10px;font-weight:600">SISTE</span>':''}
       </div>
       <ul style="padding:12px 16px 12px 32px;display:flex;flex-direction:column;gap:6px">
         ${v.endringer.map(e=>`<li style="font-size:13px;color:#333;line-height:1.4">${e}</li>`).join('')}
@@ -1529,9 +1540,9 @@ function renderSheet(mcid,sheetName){
       <div class="img-grid" id="img-grid-${mcid}-${sheetName.replace(/[^a-zA-Z0-9]/g,'-')}">
         <div style="color:#aaa;font-size:13px;grid-column:1/-1" id="img-loading-${mcid}-${sheetName.replace(/[^a-zA-Z0-9]/g,'-')}">Laster bilder...</div>
       </div>
-      <button class="img-upload-btn" onclick="triggerImageUpload('${mcid}','${sheetName.replace(/'/g,"\\'")}')">
+      ${!window.currentUser?.readOnly ? `<button class="img-upload-btn" onclick="triggerImageUpload('${mcid}','${sheetName.replace(/'/g,"\\'")}')">
         📎 Last opp bilde
-      </button>
+      </button>` : ''}
       <button class="img-upload-btn" onclick="loadImages('${mcid}','${sheetName.replace(/'/g,"\\'")}',true)" style="background:#1a4a8a;margin-left:8px">
         🔄 Vis bilder
       </button>
@@ -1583,7 +1594,9 @@ function buildChangelog(mcid,sheetName){
 // ── ACTIONS ──
 function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');}
 function updMeta(mcid,sn,f,v){if(state[mcid]?.sheets[sn])state[mcid].sheets[sn].meta[f]=v;save();}
-function updRow(mcid,sn,i,f,v){if(state[mcid]?.sheets[sn])state[mcid].sheets[sn].rows[i][f]=v;save();}
+function isReadOnly(){ return window.currentUser?.readOnly === true; }
+
+function updRow(mcid,sn,i,f,v){if(isReadOnly()){toast('Kun lesetilgang');return;}if(state[mcid]?.sheets[sn])state[mcid].sheets[sn].rows[i][f]=v;save();}
 function autoResize(el){
   el.style.height='auto';
   el.style.height=el.scrollHeight+'px';
@@ -1597,6 +1610,7 @@ function handleTaChange(el){
 }
 
 function togNA(mcid,sn,i,val){
+  if(isReadOnly()){toast('Kun lesetilgang');return;}
   if(!state[mcid]?.sheets[sn]) return;
   state[mcid].sheets[sn].rows[i].na=val;
   if(val) state[mcid].sheets[sn].rows[i].maal='';
@@ -1613,6 +1627,7 @@ function removeSign(mcid,sn,i){
 }
 
 function signRow(mcid,sn,i){
+  if(isReadOnly()){toast('Kun lesetilgang');return;}
   if(!state[mcid]?.sheets[sn]) return;
   const user = window.currentUser;
   if(!user){ alert('Ingen bruker innlogget'); return; }
@@ -1634,6 +1649,7 @@ function updSign(mcid,sn,i,v){
   save(); renderSheet(mcid,sn); buildSidebar();
 }
 function togAvvik(mcid,sn,i,v){
+  if(isReadOnly()){toast('Kun lesetilgang');return;}
   if(!state[mcid]?.sheets[sn]) return;
   const prev=state[mcid].sheets[sn].rows[i].avvik;
   if(prev==='ja'&&v==='nei'){showChangelogDialog(mcid,sn,i,v);return;}
@@ -1781,6 +1797,7 @@ async function loadImages(mcid, sn, force=false) {
 }
 
 function triggerImageUpload(mcid, sn) {
+  if(isReadOnly()){toast('Kun lesetilgang');return;}
   const inputId = 'img-input-' + mcid + '-' + sn.replace(/[^a-zA-Z0-9]/g,'-');
   document.getElementById(inputId)?.click();
 }
@@ -1859,11 +1876,19 @@ function openLightbox(url) {
 
 // ── INNLOGGING ──
 const USERS = [
-  { id:'helge',   name:'Helge Høgsand',     initials:'HH' },
-  { id:'patrik',  name:'Patrik Gustavsson',  initials:'PG' },
-  { id:'miguel',  name:'Miguel Pires',       initials:'MP' },
-  { id:'hampus',  name:'Hampus',             initials:'H'  },
-  { id:'test',    name:'Test',               initials:'T'  },
+  { id:'helge',    name:'Helge Høgsand',       initials:'HH' },
+  { id:'patrik',   name:'Patrik Gustavsson',    initials:'PG' },
+  { id:'miguel',   name:'Miguel Pires',         initials:'MP' },
+  { id:'hampus',   name:'Hampus',               initials:'H'  },
+  { id:'espen',    name:'Espen Vestrum',         initials:'EV' },
+  { id:'even',     name:'Even Grønvold',         initials:'EG' },
+  { id:'jonedvard',name:'Jon Edvard Øverstad',  initials:'JØ' },
+  { id:'magnus',   name:'Magnus Øverlier',       initials:'MØ' },
+  { id:'mathias',  name:'Mathias Haugli',        initials:'MH' },
+  { id:'vemund',   name:'Vemund Viker',          initials:'VV' },
+  { id:'henning',  name:'Henning Lykke',         initials:'HL' },
+  { id:'test',     name:'Test',                  initials:'T'  },
+  { id:'statnett', name:'Statnett',              initials:'SN', readOnly:true },
 ];
 
 let loginState = { user:null, pin:'', step:'grid', confirmPin:'' };
@@ -2063,6 +2088,15 @@ function getVedlegg(id, filename) {
 // ── INIT ──
 initLogin();
 loadCloud().then(()=>{
+  // Nullstill alle changelogs i sjekklister
+  Object.keys(state).forEach(mcid => {
+    if (!state[mcid]?.sheets) return;
+    Object.keys(state[mcid].sheets).forEach(sn => {
+      const rows = state[mcid].sheets[sn]?.rows;
+      if (!rows) return;
+      rows.forEach(r => { r.changelog = []; });
+    });
+  });
   applyRIRPrefill();
   buildSidebar();
   showHome();
