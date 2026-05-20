@@ -499,7 +499,9 @@ function save(){
     try{
       const r=await fetch(WORKER,{method:'POST',headers:{'Content-Type':'application/json'},body:json});
       setSyncStatus(r.ok?'ok':'err');
+      _lastCloudJson = json;
     }catch(e){setSyncStatus('err');}
+    saveTimer=null;
   },800);
 }
 
@@ -523,6 +525,28 @@ async function loadCloud(){
     }
   }).catch(()=>setSyncStatus('err'));
 }
+
+// ── AUTO-POLLING: synkroniser fra cloud hvert 30 sekund ──
+let _lastCloudJson = '';
+async function pollCloud() {
+  try {
+    const r = await fetch(WORKER, {method:'GET'});
+    if (!r.ok) return;
+    const data = await r.json();
+    const json = JSON.stringify(data);
+    if (json === _lastCloudJson) return; // ingen endring
+    _lastCloudJson = json;
+    // Ikke overskriv hvis bruker holder på å skrive (saveTimer aktiv)
+    if (saveTimer) return;
+    state = data;
+    initState();
+    buildSidebar();
+    if (currentSheet) renderSheet(currentMC, currentSheet);
+    else if (!currentMC) showHome();
+    setSyncStatus('ok');
+  } catch(e) { /* stille feil */ }
+}
+setInterval(pollCloud, 30000);
 
 // ── SIDEBAR ──
 function toggleGroup(kat){
